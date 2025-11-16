@@ -1,0 +1,31 @@
+{
+  "name": "dutch-planning-regulations-app",
+  "version": "1.0.0",
+  "description": "Web applicatie voor het raadplegen van Nederlandse omgevingsplannen via DSO API",
+  "main": "backend/server.js",
+  "scripts": {
+    "backend": "node backend/server.js",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "install-all": "npm install && cd frontend && npm install",
+    "build": "cd frontend && npm run build"
+  },
+  "keywords": [
+    "dso",
+    "omgevingswet",
+    "planning",
+    "regulations",
+    "netherlands"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
