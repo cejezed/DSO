@@ -8,6 +8,9 @@
 const express = require('express');
 const router = express.Router();
 const dsoService = require('../services/dsoService');
+const { mockPlanningData, mockRegulations, mockGeoJSON } = require('../mockData');
+
+const USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true';
 
 /**
  * POST /api/dso/planning-data
@@ -29,6 +32,17 @@ router.post('/planning-data', async (req, res) => {
     }
 
     console.log(`Ophalen planning data voor locatie: ${lat}, ${lon}`);
+
+    // Mock data mode voor testing zonder DSO API key
+    if (USE_MOCK_DATA) {
+      console.log('🎭 Using MOCK DATA mode');
+      return res.json({
+        success: true,
+        location: { lat, lon },
+        data: mockPlanningData,
+        mock: true
+      });
+    }
 
     // Haal omgevingsplannen op voor deze locatie
     const planningData = await dsoService.getPlanningDataForLocation(lat, lon);
@@ -69,6 +83,28 @@ router.post('/regulations', async (req, res) => {
 
     console.log(`Ophalen voorschriften voor locatie: ${lat}, ${lon}`);
     console.log(`Filters: ${filters ? filters.join(', ') : 'geen'}`);
+
+    // Mock data mode
+    if (USE_MOCK_DATA) {
+      console.log('🎭 Using MOCK DATA mode');
+      let filteredData = { ...mockRegulations };
+
+      // Apply filters if provided
+      if (filters && filters.length > 0) {
+        filteredData.regulations = mockRegulations.regulations.filter(reg => {
+          const searchText = `${reg.naam} ${reg.omschrijving} ${reg.thema} ${reg.groep}`.toLowerCase();
+          return filters.some(filter => searchText.includes(filter.toLowerCase()));
+        });
+        filteredData.count = filteredData.regulations.length;
+      }
+
+      return res.json({
+        success: true,
+        location: { lat, lon },
+        regulations: filteredData,
+        mock: true
+      });
+    }
 
     // Haal voorschriften op
     const regulations = await dsoService.getRegulationsForLocation(lat, lon, filters);
@@ -132,6 +168,20 @@ router.post('/geojson', async (req, res) => {
     }
 
     console.log(`Ophalen GeoJSON voor locatie: ${lat}, ${lon}`);
+
+    // Mock data mode
+    if (USE_MOCK_DATA) {
+      console.log('🎭 Using MOCK DATA mode');
+      // Update coordinates in mock data
+      const geojson = JSON.parse(JSON.stringify(mockGeoJSON)); // Deep clone
+      geojson.features[0].geometry.coordinates = [lon, lat];
+
+      return res.json({
+        success: true,
+        geojson: geojson,
+        mock: true
+      });
+    }
 
     const geojson = await dsoService.getGeoJsonForLocation(lat, lon);
 
