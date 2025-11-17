@@ -7,10 +7,8 @@
 const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
-const { mockLocations } = require('../mockData');
 
 const PDOK_URL = process.env.PDOK_GEOCODE_URL || 'https://api.pdok.nl/bzk/locatieserver/search/v3_1/free';
-const USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true';
 
 /**
  * POST /api/geocode
@@ -30,36 +28,6 @@ router.post('/', async (req, res) => {
     }
 
     console.log(`Geocoding adres: ${address}`);
-
-    // Mock data mode voor testing zonder API
-    if (USE_MOCK_DATA) {
-      console.log('🎭 Using MOCK DATA mode');
-      const addressLower = address.toLowerCase();
-      const results = [];
-
-      // Check voor bekende mock locaties
-      if (addressLower.includes('haarlem')) {
-        results.push(mockLocations.haarlem);
-      }
-      if (addressLower.includes('utrecht')) {
-        results.push(mockLocations.utrecht);
-      }
-      if (addressLower.includes('amsterdam')) {
-        results.push(mockLocations.amsterdam);
-      }
-
-      // Als geen specifieke match, geef alle mock locaties
-      if (results.length === 0) {
-        results.push(mockLocations.haarlem, mockLocations.utrecht, mockLocations.amsterdam);
-      }
-
-      return res.json({
-        success: true,
-        count: results.length,
-        results: results,
-        mock: true
-      });
-    }
 
     // Query PDOK Locatieserver
     const url = `${PDOK_URL}?q=${encodeURIComponent(address)}&fq=type:adres&rows=5`;
